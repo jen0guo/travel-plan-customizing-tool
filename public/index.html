@@ -1,0 +1,142 @@
+<html>
+
+<head>
+  <title>Travel Plan Sharing Website</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <script src="javascripts/index.js"></script>
+  <script src="javascripts/identity.js"></script>
+  <script src="javascripts/utils.js"></script>
+</head>
+
+<body onload="init()">
+  <nav class="navbar">
+    <div class="header">
+      <button id="profile" onclick="window.location.href='/userInfo.html'">My Profile</button>
+      <button id="travel_plan" onclick="window.location.href='/travelPlan.html'">Travel Plan</button>
+    </div>
+    <div id="identity_div">loading...</div>
+  </nav>
+  <div id="errorInfo" class="alert alert-danger fade show" role="alert" style="opacity:0"></div>
+  <hr>
+  <h1 class="sect">Search for a city your want to travel!</h1>
+  <div id="search_div">
+    <input type="text" id="search" placeholder="Type a state or a city?">
+    <select id="filter"> 
+      <option value="state">State</option>
+      <option value="city">City</option>
+    </select>
+    <button class="sbtn" onclick="searchPosts()" id="searchButton">Search!</button>
+  </div>
+  </br>
+  <div class="modal">
+    <div class="modal-content">
+      <div id="modal-insert"></div>
+    </div>
+  </div>
+  </br>
+  <div id="search_boxes"  class="item-row-expand row"></div>
+  <h1 class="sect">Share the Locations You Visited!</h1>
+  <button class="sbtn" onclick="popup()">Create a post</button>
+  <!-- <form></form> id="make_post_div" class="d-none"-->
+  <div id="popup">
+    <div id="content">
+      <button onclick="popup()" id="close">X</button>
+      <p class="text-font">Enter the state</p>
+      <select type="text" id="state">
+        <option value="Alabama">Alabama</option>
+        <option value="Alaska">Alaska</option>
+        <option value="Arizona">Arizona</option>
+        <option value="Arkansas">Arkansas</option>
+        <option value="California">California</option>
+        <option value="Colorado">Colorado</option>
+        <option value="Connecticut">Connecticut</option>
+        <option value="Delaware">Delaware</option>
+        <option value="Florida">Florida</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Hawaii">Hawaii</option>
+        <option value="Idaho">Idaho</option>
+        <option value="Illinois">Illinois</option>
+        <option value="Indiana">Indiana</option>
+        <option value="Iowa">Iowa</option>
+        <option value="Kansas">Kansas</option>
+        <option value="Kentucky">Kentucky</option>
+        <option value="Louisiana">Louisiana</option>
+        <option value="Maine">Maine</option>
+        <option value="Maryland">Maryland</option>
+        <option value="Massachusetts">Massachusetts</option>
+        <option value="Michigan">Michigan</option>
+        <option value="Minnesota">Minnesota</option>
+        <option value="Mississippi">Mississippi</option>
+        <option value="Missouri">Missouri</option>
+        <option value="Montana">Montana</option>
+        <option value="Nebraska">Nebraska</option>
+        <option value="Nevada">Nevada</option>
+        <option value="New Hampshire">New Hampshire</option>
+        <option value="New Jersey">New Jersey</option>
+        <option value="New Mexico">New Mexico</option>
+        <option value="New York">New York</option>
+        <option value="North Carolina">North Carolina</option>
+        <option value="North Dakota">North Dakota</option>
+        <option value="Ohio">Ohio</option>
+        <option value="Oklahoma">Oklahoma</option>
+        <option value="Oregon">Oregon</option>
+        <option value="Pennsylvania">Pennsylvania</option>
+        <option value="Rhode Island">Rhode Island</option>
+        <option value="South Carolina">South Carolina</option>
+        <option value="South Dakota">South Dakota</option>
+        <option value="Tennessee">Tennessee</option>
+        <option value="Texas">Texas</option>
+        <option value="Utah">Utah</option>
+        <option value="Vermont">Vermont</option>
+        <option value="Virginia">Virginia</option>
+        <option value="Washington">Washington</option>
+        <option value="West Virginia">West Virginia</option>
+        <option value="Wisconsin">Wisconsin</option>
+        <option value="Wyoming">Wyoming</option>
+      </select>
+      <br/>
+      <p class="text-font">Enter the City</p>
+      <input type="text" id ="city">
+      <br/>
+      <p class="text-font">Enter the hotel you stayed at</p>
+      <input type="text" id="hotel">
+      <br/>
+      <p class="text-font">Enter the restaurants you visited</p>
+        <div id="rest-query" class="flex">
+          <div id="r1">
+            <br>
+            <div>
+              <input type="text" id="restaurant" class="inR">
+              <button onclick="deleteQuery('r1')">delete</button>
+            </div>
+          </div>
+        </div>
+        <button onclick="addRest()">add</button>
+      <br/>
+      <p class="text-font">Enter the places you visited</p>
+        <div id="place-query" class="flex">
+          <div id="p1">
+            <br>
+            <div>
+              <input type="text" id="places" class="inP">
+              <button onclick="deleteQuery('p1')">delete</button>
+            </div>
+          </div>
+        </div>
+        <button onclick="addPlace()">add</button>
+      <br/>
+      <br/>
+      <button class="color-change text-font" onclick="makePost()">Submit</button> <span id="postStatus"></span>
+    </div>
+  </div>
+  <br/>
+  <br/>
+  <hr>
+  <hr>
+  <h1 class="sect">Previous Posts</h1>
+  <br/>
+  <div id="post_boxes" class="item-row-expand row d-flex justify-content-around"></div>
+</body>
+
+</html>

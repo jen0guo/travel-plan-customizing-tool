@@ -1,0 +1,23 @@
+<html>
+
+<head>
+  <title>Website Sharer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <script src="javascripts/utils.js"></script>
+  <script src="javascripts/identity.js"></script>
+  <script src="javascripts/userInfo.js"></script>
+</head>
+
+<body onload="travlePlanInit()">
+  <nav class="navbar">
+    <div style="align-items:left;font-size:x-large"><button onclick="window.location.href='/'">Return to Homepage</button></div>
+    <div id="identity_div">loading...</div>
+  </nav>
+  <div id="errorInfo" class="alert alert-danger fade show" role="alert" style="opacity:0"></div>
+  <hr>
+  <h1>Travel Plan</h1>
+  <div id="travel_plan" class="item-row-expand row d-flex justify-content-start"></div>
+</body>
+
+</html>
