@@ -99,29 +99,78 @@ router.get('/', async function(req,res,next) {
   console.log(query)
 })*/
 
-// returns results searched by the user
-router.get('/search', async function(req,res,next) {
-    let keyword = req.query.state;
-    let keycity = req.query.city;
-    let cityType = typeof keycity;
-    if(cityType ==='undefined') {
-      try {
-        let results = await req.models.Post.find({state: {'$regex' : new RegExp(`^${keyword}$`), '$options': 'i'}});
-        res.json(results)
-      } catch(err) {
-        console.log(err)
-        res.status(500).json({"status": "error", "error":err})
-      }
-    } else {
-      try {
-        let results = await req.models.Post.find({city: {'$regex' : new RegExp(`^${keycity}$`), '$options': 'i'}});
-        res.json(results)
-      } catch(err) {
-        console.log(err)
-        res.status(500).json({"status": "error", "error":err})
-    }
+// Fields the search can filter and rank on. state/city are matched exactly
+// (case-insensitive) to preserve the old single-field search behavior;
+// hotel/restaurant/places are matched as a case-insensitive substring.
+const CRITERIA_FIELDS = ['state', 'city', 'hotel', 'restaurant', 'places']
+const ARRAY_FIELDS = new Set(['restaurant', 'places'])
+const EXACT_FIELDS = new Set(['state', 'city'])
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function fieldMatches(fieldName, postValue, queryValue) {
+  const needle = queryValue.toLowerCase()
+  if (ARRAY_FIELDS.has(fieldName)) {
+    return Array.isArray(postValue) &&
+      postValue.some(v => typeof v === 'string' && v.toLowerCase().includes(needle))
   }
-    
+  if (typeof postValue !== 'string') return false
+  return EXACT_FIELDS.has(fieldName)
+    ? postValue.toLowerCase() === needle
+    : postValue.toLowerCase().includes(needle)
+}
+
+// Multi-criteria search: accepts any of state/city/hotel/restaurant/places
+// as query params, plus an optional `priority` (comma-separated field names,
+// highest priority first) that controls how results are ranked. Results are
+// filtered to posts matching at least one supplied criterion, then sorted by
+// a relevance score weighted by priority order.
+router.get('/search', async function(req, res, next) {
+  const provided = CRITERIA_FIELDS.filter(field => req.query[field])
+
+  if (provided.length === 0) {
+    return res.json([])
+  }
+
+  const requestedPriority = (req.query.priority || '')
+    .split(',')
+    .map(f => f.trim())
+    .filter(f => provided.includes(f))
+  const orderedFields = [
+    ...requestedPriority,
+    ...provided.filter(f => !requestedPriority.includes(f))
+  ]
+  const weightByField = {}
+  orderedFields.forEach((field, i) => {
+    weightByField[field] = orderedFields.length - i
+  })
+
+  try {
+    const orConditions = provided.map(field => ({
+      [field]: { '$regex': new RegExp(escapeRegex(req.query[field]), 'i') }
+    }))
+    const candidates = await req.models.Post.find({ '$or': orConditions })
+
+    const scored = candidates
+      .map(post => {
+        let score = 0
+        for (const field of provided) {
+          if (fieldMatches(field, post[field], req.query[field])) {
+            score += weightByField[field]
+          }
+        }
+        return { post, score }
+      })
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score)
+
+    res.json(scored.map(({ post, score }) => ({ ...post.toObject(), score })))
+  } catch(err) {
+    console.log(err)
+    res.status(500).json({"status": "error", "error":err})
+  }
 })
 
 export default router
