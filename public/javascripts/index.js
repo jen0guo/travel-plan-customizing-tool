@@ -1,6 +1,17 @@
 async function init(){
     await loadIdentity();
     showPosts();
+    initLiveSync();
+}
+
+// Keeps every connected client's post feed in sync as other users post,
+// without polling or a manual refresh.
+function initLiveSync() {
+    const socket = io();
+    socket.on('post:created', (post) => {
+        const postBoxes = document.getElementById('post_boxes')
+        postBoxes.innerHTML = post.postHTML + postBoxes.innerHTML
+    })
 }
 
 // Creates a new entry form for restaurant if the user clicks 'add'
@@ -130,8 +141,9 @@ async function makePost() {
     } else {
         window.alert("Forms can't be empty")
     }
-
-    showPosts()
+    // No manual refresh here: the server broadcasts 'post:created' over the
+    // socket (see initLiveSync) once the post is actually saved, so this
+    // client's own feed updates the same way every other client's does.
 }
 
 // Show posts stored in the database

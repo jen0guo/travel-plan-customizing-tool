@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import path from 'path';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import models from './models.js'
@@ -30,6 +32,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 var app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer);
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -51,6 +55,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res, next) => {
     // makes a models step
     req.models = models
+    req.io = io
     next()
   })
 
@@ -70,6 +75,6 @@ app.use('/api/v1', apiV1Router)
 export default app;
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Example app listening at http://localhost:${PORT}`)
 })
