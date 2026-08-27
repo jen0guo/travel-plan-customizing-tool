@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
@@ -14,9 +15,9 @@ import { dirname } from 'path';
 
 const appSettings = {
 	appCredentials: {
-    	clientId:  env.clientId,
-    	tenantId:  env.tenantId,
-    	clientSecret: env.clientSecret
+    	clientId:  process.env.clientId,
+    	tenantId:  process.env.tenantId,
+    	clientSecret: process.env.clientSecret
 	},
 	authRoutes: {
     	redirect: "http://localhost:3000/redirect",
@@ -36,7 +37,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 const oneDay = 1000 * 60 * 60 * 24
 app.use(sessions({
-    secret: env.secret,
+    secret: process.env.secret,
     saveUninitialized: true,
     cookie: {maxAge: oneDay},
     resave: false

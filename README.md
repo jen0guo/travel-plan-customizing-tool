@@ -18,12 +18,13 @@ The original project proposal (target audience, planned features, initial archit
    ```
    npm install
    ```
-2. Create a `.env` file in the project root with your Azure AD app registration values and a session secret:
+2. Create a `.env` file in the project root (see `.env.example` for the template) with your Azure AD app registration values, a session secret, and the MongoDB connection string:
    ```
    clientId=<Azure AD application (client) ID>
    tenantId=<Azure AD tenant ID>
    clientSecret=<Azure AD client secret>
    secret=<any random string, used to sign session cookies>
+   mongoUri=<MongoDB connection string, e.g. mongodb+srv://user:pass@cluster-host/dbname>
    ```
 3. Start the server:
    ```
