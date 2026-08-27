@@ -5,6 +5,16 @@ import { body, validationResult } from 'express-validator';
 
 var router = express.Router();
 
+const validatePost = [
+    body('state').isString().trim().notEmpty().withMessage('state is required'),
+    body('city').isString().trim().notEmpty().withMessage('city is required'),
+    body('hotel').isString().trim().notEmpty().withMessage('hotel is required'),
+    body('restaurant').isArray({ min: 1 }).withMessage('restaurant must be a non-empty array'),
+    body('restaurant.*').isString().trim().notEmpty().withMessage('restaurant entries must be non-empty strings'),
+    body('places').isArray({ min: 1 }).withMessage('places must be a non-empty array'),
+    body('places.*').isString().trim().notEmpty().withMessage('places entries must be non-empty strings'),
+]
+
 // Builds the same shape GET / already returns for a single post, so newly
 // created posts broadcast over the socket render identically to a fetched one.
 function toPostPayload(post) {
