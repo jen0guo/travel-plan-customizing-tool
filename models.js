@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import mongoose from 'mongoose'
 
 let models = {};
@@ -5,7 +6,7 @@ let models = {};
 main().catch(err => console.log(err))
 async function main() {
     console.log('Connecting to mongodb')
-    await mongoose.connect('mongodb+srv://travelplan:travelplan123@travelplan.ceh9s.mongodb.net/projectDatabase?retryWrites=true&w=majority')
+    await mongoose.connect(process.env.mongoUri)
     console.log('success')
     const postSchema = new mongoose.Schema({
         state: { type: String, required: true, trim: true },
