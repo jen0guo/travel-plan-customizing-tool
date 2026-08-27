@@ -5,15 +5,43 @@ import { body, validationResult } from 'express-validator';
 
 var router = express.Router();
 
-const validatePost = [
-    body('state').isString().trim().notEmpty().withMessage('state is required'),
-    body('city').isString().trim().notEmpty().withMessage('city is required'),
-    body('hotel').isString().trim().notEmpty().withMessage('hotel is required'),
-    body('restaurant').isArray({ min: 1 }).withMessage('restaurant must be a non-empty array'),
-    body('restaurant.*').isString().trim().notEmpty().withMessage('restaurant entries must be non-empty strings'),
-    body('places').isArray({ min: 1 }).withMessage('places must be a non-empty array'),
-    body('places.*').isString().trim().notEmpty().withMessage('places entries must be non-empty strings'),
-]
+// Builds the same shape GET / already returns for a single post, so newly
+// created posts broadcast over the socket render identically to a fetched one.
+function toPostPayload(post) {
+    const places = post.places
+    const restaurant = post.restaurant
+    let placesHTML = ""
+    for (let i = 0; i < places.length; i++) {
+      placesHTML += `<p>${places[i]}</p><br>`
+    }
+    let restHTML = ""
+    for (let i = 0; i < restaurant.length; i++) {
+      restHTML += `<p>${restaurant[i]}</p><br>`
+    }
+    let plcStr = ""
+    for (let i = 0; i < places.length; i++) {
+      plcStr = plcStr + places[i] + "%^&*"
+    }
+    let resStr = ""
+    for (let i = 0; i < restaurant.length; i++) {
+      resStr = resStr + restaurant[i] + "%^&*"
+    }
+    return {
+        "username": post.username,
+        "id": post._id,
+        "city": post.city,
+        "postHTML":
+        `<div onclick="generateForm('${post.username}', '${post.city}', '${post.state}', '${plcStr}', '${post.hotel}', '${resStr}')"  id="post_card" class="col col-xs-12 col-sm-4 col-lg-3 col-xl-2">
+          <h3>${post.username}</h3>
+          <h2>Post</h2>
+          <h3>City</h3><p>${post.city}</p>
+          <h3>State</h3><p>${post.state}</p>
+          <h3>Hotel</h3><p>${post.hotel}</p>
+          <h3>Restaurant</h3><div>${restHTML}</div>
+          <h3>Place</h3><div>${placesHTML}</div>
+        </div>`
+    }
+}
 
 // Posts new entry in the database
 router.post('/', validatePost, async function(req, res, next){
@@ -38,6 +66,7 @@ router.post('/', validatePost, async function(req, res, next){
             )
             console.log("sent successfuly")
             await newPost.save()
+            req.io.emit('post:created', toPostPayload(newPost))
             res.json({"status": "Success"})
         } catch(err) {
             const errJson = {"status": "error", "error": err}
@@ -59,49 +88,7 @@ router.get('/', async function(req,res,next) {
         }else {
           posts = await req.models.Post.find()
         }
-        let postData = await Promise.all(
-          posts.map(async post => {
-            let places = post.places
-            let restaurant = post.restaurant
-            console.log("------------")
-            console.log("post id: ", post._id)
-            console.log("places: ", places)
-            console.log("restaurant: ", restaurant)
-            console.log("------------")
-            let placesHTML = ""
-            // renders HTML in the server
-            for (let i = 0; i < places.length; i++) {
-              placesHTML += `<p>${places[i]}</p><br>`
-            }
-            let restHTML = ""
-            for (let i = 0; i < restaurant.length; i++) {
-              restHTML += `<p>${restaurant[i]}</p><br>`
-            }
-            let plcStr = ""
-            for (let i = 0; i < places.length; i++) {
-              plcStr = plcStr + places[i] + "%^&*"
-            }
-            let resStr = ""
-            for (let i = 0; i < restaurant.length; i++) {
-              resStr = resStr + restaurant[i] + "%^&*"
-            }
-            return {
-                "username":  post.username,
-                "id": post._id,
-                "city": post.city,
-                "postHTML" : 
-                `<div onclick="generateForm('${post.username}', '${post.city}', '${post.state}', '${plcStr}', '${post.hotel}', '${resStr}')"  id="post_card" class="col col-xs-12 col-sm-4 col-lg-3 col-xl-2">
-                  <h3>${post.username}</h3>
-                  <h2>Post</h2>
-                  <h3>City</h3><p>${post.city}</p>
-                  <h3>State</h3><p>${post.state}</p>
-                  <h3>Hotel</h3><p>${post.hotel}</p>
-                  <h3>Restaurant</h3><div>${restHTML}</div>
-                  <h3>Place</h3><div>${placesHTML}</div>
-                </div>`
-            }
-          })
-        );
+        let postData = posts.map(toPostPayload)
         res.json(postData)
       } catch (error) {
         console.log(error)
