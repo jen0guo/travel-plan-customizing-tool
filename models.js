@@ -9,24 +9,33 @@ async function main() {
     await mongoose.connect(process.env.mongoUri)
     console.log('success')
     const postSchema = new mongoose.Schema({
-        state: String,
-        city: String,
-        hotel: String,
+        state: { type: String, required: true, trim: true },
+        city: { type: String, required: true, trim: true },
+        hotel: { type: String, required: true, trim: true },
         restaurant: Array,
         places: Array,
-        username: String
+        username: { type: String, required: true, trim: true }
     })
+    // /search filters on state and city, and GET / filters on username
+    postSchema.index({ state: 1 })
+    postSchema.index({ city: 1 })
+    postSchema.index({ username: 1 })
     // makes a Post piece
     models.Post = mongoose.model('Post', postSchema)
 
     const travelPlanSchema = new mongoose.Schema({
-        state: String,
+        state: { type: String, required: true, trim: true },
         city: Array,
         hotel: Array,
         restaurant: Array,
         places: Array,
-        username: String
+        username: { type: String, required: true, trim: true }
     })
+    // Every plan document is keyed by (username, state) per the app logic in
+    // plans.js ("every entry is defined by a state and username") - enforce
+    // that invariant at the DB level too, closing a race where two concurrent
+    // requests could otherwise create duplicate documents for the same pair.
+    travelPlanSchema.index({ username: 1, state: 1 }, { unique: true })
     // makes a Plan piece
     models.Plan = mongoose.model('Plan', travelPlanSchema)
 

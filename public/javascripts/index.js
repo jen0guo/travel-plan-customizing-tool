@@ -369,38 +369,52 @@ async function addToList(inputList) {
     }
 }
 
-// Returns posts queried by the user
+// Multi-criteria search: reads whichever of state/city/hotel/restaurant/place
+// fields the user filled in, sends them all as query params (in the order
+// they appear in the form, which doubles as the ranking priority), and
+// renders results sorted by relevance score returned by the server.
 async function searchPosts() {
-    let keyword = document.getElementById("search").value;
-    let keySearch = document.getElementById("filter").value;
-    if(keyword === "") {
-        document.getElementById('search_boxes').innerHTML = "<p style=color:red;font-size:large>Please enter the keyword before searching :D</p2><br><br>";
+    const fieldOrder = ['state', 'city', 'hotel', 'restaurant', 'places']
+    const params = new URLSearchParams()
+    const priority = []
+    for (const field of fieldOrder) {
+        let value = document.getElementById(`search-${field}`).value.trim()
+        if (value !== "") {
+            params.set(field, value)
+            priority.push(field)
+        }
+    }
+
+    if (priority.length === 0) {
+        document.getElementById('search_boxes').innerHTML = "<p style=color:red;font-size:large>Please enter at least one search criterion :D</p><br><br>";
+        await new Promise(resolve => setTimeout(resolve, 4 * 1000))
+        document.getElementById('search_boxes').innerHTML = "";
+        return
+    }
+    params.set('priority', priority.join(','))
+
+    let response = await fetch('api/v1/posts/search?' + params.toString())
+    let postJson = await response.json()
+    console.log(postJson)
+    console.log("length: " + postJson.length)
+    if (postJson.length == 0) {
+        document.getElementById('search_boxes').innerHTML = "<p style=color:red;font-size:large>no result, please try another keyword or check your keyword and filter :D</p><br><br>";
         await new Promise(resolve => setTimeout(resolve, 4 * 1000))
         document.getElementById('search_boxes').innerHTML = "";
     } else {
-        let response = await fetch('api/v1/posts/search?' + keySearch + '=' + keyword)
-        let postJson = await response.json()
-        console.log(postJson)
-        console.log("length: " + postJson.length)
-        if (postJson.length == 0) {
-            document.getElementById('search_boxes').innerHTML = "<p style=color:red;font-size:large>no result, please try another keyword or check your keyword and filter :D</p><br><br>";
-            await new Promise(resolve => setTimeout(resolve, 4 * 1000))
-            document.getElementById('search_boxes').innerHTML = "";
-        } else {
-            let searchHTML = ""
-            searchHTML = postJson.map(post => {
-                return`<div id="post_card" class="col col-xs-12 col-sm-4 col-lg-3 col-xl-2">
-                <h3>${post.username}</h3>
-                <h2>Post</h2>
-                <h3>City</h3><p>${post.city}</p>
-                <h3>State</h3><p>${post.state}</p>
-                <h3>Hotel</h3><p>${post.hotel}</p>
-                <h3>Restaurant</h3><div>${post.restaurant}</div>
-                <h3>Place</h3><div>${post.places}</div>
-                </div>`
-            })
-            document.getElementById('search_boxes').innerHTML = searchHTML + "<br>";
-        }
+        let searchHTML = ""
+        searchHTML = postJson.map(post => {
+            return`<div id="post_card" class="col col-xs-12 col-sm-4 col-lg-3 col-xl-2">
+            <h3>${post.username}</h3>
+            <h2>Post <span style="font-size:small">(match score: ${post.score})</span></h2>
+            <h3>City</h3><p>${post.city}</p>
+            <h3>State</h3><p>${post.state}</p>
+            <h3>Hotel</h3><p>${post.hotel}</p>
+            <h3>Restaurant</h3><div>${post.restaurant}</div>
+            <h3>Place</h3><div>${post.places}</div>
+            </div>`
+        })
+        document.getElementById('search_boxes').innerHTML = searchHTML + "<br>";
     }
 }
 

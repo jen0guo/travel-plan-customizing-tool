@@ -1,8 +1,21 @@
 import express from 'express'
 import mongoose from 'mongoose'
 import session from 'express-session';
+import { body, validationResult } from 'express-validator';
 
 var router = express.Router();
+
+// content is [type, value, state] where type picks which branch of the
+// POST / handler below runs - validate it matches what that switch logic
+// actually assumes, instead of letting an unexpected shape fall through
+// silently and crash on newPost.save() with newPost left undefined.
+const ALLOWED_CONTENT_TYPES = ['state', 'city', 'hotel', 'restaurant', 'places']
+const validatePlanContent = [
+    body('content').isArray({ min: 3, max: 3 }).withMessage('content must be an array of exactly 3 elements: [type, value, state]'),
+    body('content.0').isIn(ALLOWED_CONTENT_TYPES).withMessage(`content[0] must be one of: ${ALLOWED_CONTENT_TYPES.join(', ')}`),
+    body('content.1').isString().trim().notEmpty().withMessage('content[1] (value) is required'),
+    body('content.2').isString().trim().notEmpty().withMessage('content[2] (state) is required'),
+]
 
 // Gets a planner made by the user
 router.get('/', async function(req, res, next) {
@@ -38,8 +51,12 @@ router.get('/', async function(req, res, next) {
 // Posts a plan to the database. Every user can have up to 51 different documents with 51 respective states
 // Because there can only be one unique state per persone, every entry is defined by a state and username.
 // If a region within the state already exists, returns nothing. If the said state doesn't exist in the database, posts a new state
-router.post('/', async function(req, res, next){
+router.post('/', validatePlanContent, async function(req, res, next){
     console.log("working i guess")
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({"status": "error", "error": errors.array()})
+    }
     let session = req.session
     console.log(req.body.content)
     // req.body.content - a list that have 3 elements

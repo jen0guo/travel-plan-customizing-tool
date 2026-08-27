@@ -21,12 +21,13 @@
   <div id="errorInfo" class="alert alert-danger fade show" role="alert" style="opacity:0"></div>
   <hr>
   <h1 class="sect">Search for a city your want to travel!</h1>
+  <p class="text-font">Fill in any of the criteria below. Ranking priority: highest weight goes to the top field with a value, in the order listed.</p>
   <div id="search_div">
-    <input type="text" id="search" placeholder="Type a state or a city?">
-    <select id="filter"> 
-      <option value="state">State</option>
-      <option value="city">City</option>
-    </select>
+    <input type="text" id="search-state" placeholder="State">
+    <input type="text" id="search-city" placeholder="City">
+    <input type="text" id="search-hotel" placeholder="Hotel">
+    <input type="text" id="search-restaurant" placeholder="Restaurant">
+    <input type="text" id="search-places" placeholder="Place">
     <button class="sbtn" onclick="searchPosts()" id="searchButton">Search!</button>
   </div>
   </br>
