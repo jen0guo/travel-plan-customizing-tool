@@ -10,6 +10,7 @@ The original project proposal (target audience, planned features, initial archit
 - **Database:** MongoDB, via Mongoose
 - **Auth:** `express-session` (cookie-based sessions) with sign-in handled by Azure AD (Microsoft Entra ID) through `microsoft-identity-express`
 - **API:** REST endpoints under `/api/v1` (`posts`, `users`, `plans`) — see `routes/api/v1/`
+- **Real-time updates:** `Socket.io`, attached to the same HTTP server as Express (`app.js`) — new posts broadcast live to every connected client instead of requiring a manual refresh
 - **Frontend:** server-served static HTML/CSS + vanilla JavaScript (Bootstrap for styling) — no frontend framework, no build step. Pages live in `public/`, client-side logic in `public/javascripts/`.
 
 ## Running locally
