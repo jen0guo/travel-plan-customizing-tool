@@ -369,12 +369,22 @@ async function addToList(inputList) {
     }
 }
 
+const SEARCH_FIELD_ORDER = ['state', 'city', 'hotel', 'restaurant', 'places']
+
+// Resets every search input and clears any results currently shown.
+function clearSearch() {
+    for (const field of SEARCH_FIELD_ORDER) {
+        document.getElementById(`search-${field}`).value = ""
+    }
+    document.getElementById('search_boxes').innerHTML = ""
+}
+
 // Multi-criteria search: reads whichever of state/city/hotel/restaurant/place
 // fields the user filled in, sends them all as query params (in the order
 // they appear in the form, which doubles as the ranking priority), and
 // renders results sorted by relevance score returned by the server.
 async function searchPosts() {
-    const fieldOrder = ['state', 'city', 'hotel', 'restaurant', 'places']
+    const fieldOrder = SEARCH_FIELD_ORDER
     const params = new URLSearchParams()
     const priority = []
     for (const field of fieldOrder) {
