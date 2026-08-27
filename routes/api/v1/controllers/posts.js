@@ -1,12 +1,27 @@
 import express from 'express'
 import mongoose from 'mongoose'
 import session from 'express-session';
+import { body, validationResult } from 'express-validator';
 
 var router = express.Router();
 
+const validatePost = [
+    body('state').isString().trim().notEmpty().withMessage('state is required'),
+    body('city').isString().trim().notEmpty().withMessage('city is required'),
+    body('hotel').isString().trim().notEmpty().withMessage('hotel is required'),
+    body('restaurant').isArray({ min: 1 }).withMessage('restaurant must be a non-empty array'),
+    body('restaurant.*').isString().trim().notEmpty().withMessage('restaurant entries must be non-empty strings'),
+    body('places').isArray({ min: 1 }).withMessage('places must be a non-empty array'),
+    body('places.*').isString().trim().notEmpty().withMessage('places entries must be non-empty strings'),
+]
+
 // Posts new entry in the database
-router.post('/', async function(req, res, next){
+router.post('/', validatePost, async function(req, res, next){
     console.log("working i guess")
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        return res.status(400).json({"status": "error", "error": errors.array()})
+    }
     let session = req.session
     console.log(req.body.restaurant)
     if (session.isAuthenticated) {
